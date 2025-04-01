@@ -1,0 +1,32 @@
+version: "1.0"
+
+services:
+  mc:
+    container_name: Minecraft-Server
+    image: itzg/minecraft-server
+    ports:
+      - 25565:25565
+    environment:
+      EULA: "TRUE"
+      MEMORY: "6G"
+      VERSION: "1.21.4"
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    volumes:
+      - ./minecraft-data:/data
+    mem_limit: 6g
+    memswap_limit: 6g
+
+  backup:
+    image: rclone/rclone:latest
+    container_name: minecraft-backup
+    volumes:
+      - ./minecraft-data:/data:ro
+      - ./backups:/backups
+      - ./backup:/etc/cron.d
+      - ./backup/backup.sh:/backup.sh
+      - ./rclone:/config:ro
+      - ./rclone/upload.sh:/upload.sh
+    entrypoint: sh -c "chmod +x /backup.sh /upload.sh && /backup.sh && crontab /etc/cron.d/cronjob && touch /var/log/backup.log && crond -f -l 8"
+    restart: unless-stopped
