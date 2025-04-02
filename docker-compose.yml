@@ -1,5 +1,3 @@
-version: "1.0"
-
 services:
   mc:
     container_name: Minecraft-Server
